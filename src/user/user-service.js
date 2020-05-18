@@ -7,7 +7,7 @@ const UserService = {
     return db('user')
       .where({ username })
       .first()
-      .then(user => !!user);
+      .then((user) => !!user);
   },
   insertUser(db, newUser) {
     return db
@@ -42,51 +42,42 @@ const UserService = {
     };
   },
   populateUserWords(db, user_id) {
-    return db.transaction(async trx => {
+    return db.transaction(async (trx) => {
       const [languageId] = await trx
         .into('language')
-        .insert([
-          { name: 'French', user_id },
-        ], ['id']);
+        .insert([{ name: 'Swahili', user_id }], ['id']);
 
       // when inserting words,
       // we need to know the current sequence number
       // so that we can set the `next` field of the linked language
-      const seq = await db
-        .from('word_id_seq')
-        .select('last_value')
-        .first();
+      const seq = await db.from('word_id_seq').select('last_value').first();
 
       const languageWords = [
-        ['entraine toi', 'practice', 2],
-        ['bonjour', 'hello', 3],
-        ['maison', 'house', 4],
-        ['développeur', 'developer', 5],
-        ['traduire', 'translate', 6],
-        ['incroyable', 'amazing', 7],
-        ['chien', 'dog', 8],
-        ['chat', 'cat', null],
+        ['mazoezi', 'practice', 2],
+        ['jambo', 'hello', 3],
+        ['nyumba', 'house', 4],
+        ['mtandao', 'internet', 5],
+        ['tafsiri', 'translate', 6],
+        ['nzuri', 'good', 7],
+        ['mbwa', 'dog', 8],
+        ['paka', 'cat', 9],
+        ['kompyuta', 'computer', 10],
+        ['mtaalam', 'expert', null]
       ];
 
-      const [languageHeadId] = await trx
-        .into('word')
-        .insert(
-          languageWords.map(([original, translation, nextInc]) => ({
-            language_id: languageId.id,
-            original,
-            translation,
-            next: nextInc
-              ? Number(seq.last_value) + nextInc
-              : null
-          })),
-          ['id']
-        );
+      const [languageHeadId] = await trx.into('word').insert(
+        languageWords.map(([original, translation, nextInc]) => ({
+          language_id: languageId.id,
+          original,
+          translation,
+          next: nextInc ? Number(seq.last_value) + nextInc : null,
+        })),
+        ['id']
+      );
 
-      await trx('language')
-        .where('id', languageId.id)
-        .update({
-          head: languageHeadId.id,
-        });
+      await trx('language').where('id', languageId.id).update({
+        head: languageHeadId.id,
+      });
     });
   },
 };

@@ -43,7 +43,7 @@ authRouter
         user_id: dbUser.id,
         name: dbUser.name,
       };
-      res.send({
+      return res.send({
         authToken: AuthService.createJwt(sub, payload),
       });
     } catch (error) {
@@ -57,7 +57,7 @@ authRouter
       user_id: req.user.id,
       name: req.user.name,
     };
-    res.send({
+    return res.send({
       authToken: AuthService.createJwt(sub, payload),
     });
   });

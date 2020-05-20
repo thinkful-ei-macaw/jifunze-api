@@ -34,13 +34,29 @@ const LanguageService = {
       .from('word')
       .select(
         'id',
+        'language_id',
         'original',
+        'translation',
+        'next',
+        'memory_value',
         'correct_count',
         'incorrect_count',
       )
       .where({ id: head_id })
       .first();
   },
+
+  updateLanguage(db, user_id, head_id, score) {
+    return db('language')
+      .where('user_id', user_id)
+      .update({ head: head_id, total_score: score });
+  },
+
+  updateWord(db, word_id, next_id, counts) {
+    return db('word')
+      .where({ id: word_id })
+      .update({ next: next_id, ...counts });
+  }
 };
 
 module.exports = LanguageService;

@@ -47,7 +47,7 @@ userRouter
         user.id
       );
 
-      res
+      return res
         .status(201)
         .location(path.posix.join(req.originalUrl, `/${user.id}`))
         .json(UserService.serializeUser(user));

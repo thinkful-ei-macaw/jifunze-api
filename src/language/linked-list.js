@@ -34,6 +34,23 @@ class LinkedList {
     currNode.next = new _Node(newItem, currNode.next);
   }
 
+  insertAt(position, newItem) {
+    let currNode = this.head;
+    let counter = 1;
+
+    if (!this.head) this.insertFirst(newItem);
+    
+    while (counter < position) {
+      if (currNode.next === null) {
+        return this.insertLast(newItem);
+      }
+      currNode = currNode.next;
+      counter++;
+    }
+
+    this.insertAfter(currNode.value, newItem);
+  }
+
   find(item) {
     let currNode = this.head;
 
@@ -49,21 +66,6 @@ class LinkedList {
         currNode = currNode.next;
       }
     }
-    return currNode;
-  }
-
-  findByPosition(position) {
-    let currNode = this.head;
-    let counter = 0;
-
-    if (!this.head) return null;
-    
-    while (counter < position) {
-      if (currNode.next === null) return null;
-      currNode = currNode.next;
-      counter++;
-    }
-
     return currNode;
   }
 

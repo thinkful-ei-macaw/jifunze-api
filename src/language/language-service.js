@@ -52,10 +52,10 @@ const LanguageService = {
       .update({ head: head_id, total_score: score });
   },
 
-  updateWord(db, word_id, next_id, counts) {
+  updateWord(db, word_id, data) {
     return db('word')
       .where({ id: word_id })
-      .update({ next: next_id, ...counts });
+      .update(data);
   }
 };
 

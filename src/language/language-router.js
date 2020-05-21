@@ -85,76 +85,73 @@ languageRouter.post('/guess', jsonBodyParser, async (req, res, next) => {
         : words.filter(word => word.id === id)[0];
     };
 
+    // helper function to find the index of a word
+    const getIndex = (id) => {
+      return words.findIndex(word => word.id === id);
+    }
+
     // new linked list to hold our words (or just their IDs)
-    const LL = new LinkedList();
+    const wordList = new LinkedList();
 
-    // the head of the list will be the word whose ID matches the language head
-    let headWord = getWordAt(req.language.head);
-
-    // keep going to the `next` to populate our linked list
-    let word = headWord;
+    // insert words into list
+    let word = getWordAt(req.language.head);
     while (word !== null) {
-      LL.insertLast(word.id, word.next);
+      wordList.insertLast(word.id, word.next);
       word = getWordAt(word.next);
     }
 
-    // check if the guess was correct
-    let answer = headWord.translation;
+    // this is what happens when an answer gets submitted
+    let index = getIndex(req.language.head);
+    let currentWord = words[index];
+    let answer = currentWord.translation;
     let isCorrect = false;
-
-    if (guess !== answer) {
-      headWord.memory_value = 1;
-      headWord.incorrect_count++;
-    } else {
+    if (guess === answer) {
       isCorrect = true;
       req.language.total_score++;
-      headWord.correct_count++;
-      headWord.memory_value *= 2;
-    }
-
-    // the node at the position of the memory valyue of head word (M)
-    const newPosition = LL.findByPosition(headWord.memory_value);
-    LL.remove(headWord.id);
-    if (newPosition !== null) {
-      LL.insertAfter(newPosition.value, headWord.id);
+      currentWord.correct_count++;
+      currentWord.memory_value *= 2;
     } else {
-      LL.insertLast(headWord.id);
+      currentWord.incorrect_count++;
+      currentWord.memory_value = 1;
     }
 
-    // set new head
-    let node = LL.head;
-    LanguageService.updateLanguage(
-      db,
-      req.user.id,
-      node.value,
-      req.language.total_score
-    )
-      .then(() => {
-        while (node !== null) {
-          // persist values
-          let word = getWordAt(node.value);
-          if (word.id === headWord.id) {
-            word = headWord;
-          }
-          const { correct_count, incorrect_count } = word;
-          const counts = { correct_count, incorrect_count };
+    // remove current word
+    wordList.remove(currentWord.id);
 
+    // insert it at it's new memory value position
+    wordList.insertAt(currentWord.memory_value, currentWord.id);
+
+    // update the head
+    const head = wordList.head.value;
+    const totalScore = req.language.total_score;
+    LanguageService.updateLanguage(db, req.user.id, head, totalScore)
+      .then(() => {
+
+        // persist the changes
+        let node = wordList.head;
+        while (node !== null) {
+          const word = getWordAt(node.value);
+          const data = {
+            next: node.next ? node.next.value : null,
+            memory_value: word.memory_value,
+            correct_count: word.correct_count,
+            incorrect_count: word.incorrect_count
+          };
           LanguageService.updateWord(
-            db,
-            node.value,
-            node.next ? node.next.value : null,
-            counts
-          ).then();
+            db, node.value, data
+          ).then(() => {
+            // this only exists so that the query actually runs
+          });
           node = node.next;
         }
 
-        // send back response
-        const nextWord = getWordAt(LL.head.value);
-        return res.json({
+        // respond
+        const nextWord = getWordAt(head);
+        res.json({
           answer,
           isCorrect,
+          totalScore,
           nextWord: nextWord.original,
-          totalScore: req.language.total_score,
           wordCorrectCount: nextWord.correct_count,
           wordIncorrectCount: nextWord.incorrect_count
         });
@@ -167,4 +164,3 @@ languageRouter.post('/guess', jsonBodyParser, async (req, res, next) => {
 });
 
 module.exports = languageRouter;
-

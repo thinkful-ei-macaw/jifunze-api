@@ -105,7 +105,7 @@ languageRouter.post('/guess', jsonBodyParser, async (req, res, next) => {
     let currentWord = words[index];
     let answer = currentWord.translation;
     let isCorrect = false;
-    if (guess === answer) {
+    if (guess.toLowerCase() === answer.toLowerCase()) {
       isCorrect = true;
       req.language.total_score++;
       currentWord.correct_count++;

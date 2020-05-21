@@ -1,7 +1,6 @@
 const express = require('express');
 const LanguageService = require('./language-service');
 const { requireAuth } = require('../middleware/jwt-auth');
-const LinkedList = require('./linked-list');
 
 const languageRouter = express.Router();
 const jsonBodyParser = express.json();
@@ -61,7 +60,6 @@ languageRouter.get('/head', async (req, res, next) => {
   }
 });
 
-// may the mess begin
 languageRouter.post('/guess', jsonBodyParser, async (req, res, next) => {
   try {
     const { guess } = req.body;
@@ -72,82 +70,29 @@ languageRouter.post('/guess', jsonBodyParser, async (req, res, next) => {
       });
     }
 
-    // get all the words from the language
-    const words = await LanguageService.getLanguageWords(
-      db,
-      req.language.id
-    );
+    // get words array and linked list
+    const { words, wordList } = await LanguageService.getWordsLinkedList(db, req.language);
 
-    // helper function to get a word at a given ID
-    const getWordAt = (id) => {
-      return id === null
-        ? null
-        : words.filter(word => word.id === id)[0];
-    };
+    // check if the guess submitted is correct
+    const { answer, isCorrect, currentWord } = await LanguageService.validateGuess(words, req.language, guess);
 
-    // helper function to find the index of a word
-    const getIndex = (id) => {
-      return words.findIndex(word => word.id === id);
-    }
-
-    // new linked list to hold our words (or just their IDs)
-    const wordList = new LinkedList();
-
-    // insert words into list
-    let word = getWordAt(req.language.head);
-    while (word !== null) {
-      wordList.insertLast(word.id, word.next);
-      word = getWordAt(word.next);
-    }
-
-    // this is what happens when an answer gets submitted
-    let index = getIndex(req.language.head);
-    let currentWord = words[index];
-    let answer = currentWord.translation;
-    let isCorrect = false;
-    if (guess.toLowerCase() === answer.toLowerCase()) {
-      isCorrect = true;
-      req.language.total_score++;
-      currentWord.correct_count++;
-      currentWord.memory_value *= 2;
-    } else {
-      currentWord.incorrect_count++;
-      currentWord.memory_value = 1;
-    }
-
-    // remove current word
+    // remove current word from the linked list
     wordList.remove(currentWord.id);
 
-    // insert it at it's new memory value position
+    // insert it at it's new memory value (M) position
     wordList.insertAt(currentWord.memory_value, currentWord.id);
 
-    // update the head
+    // update the language's head & total score
     const head = wordList.head.value;
     const totalScore = req.language.total_score;
-    LanguageService.updateLanguage(db, req.user.id, head, totalScore)
+    LanguageService.updateLanguage(db, req.language.id, head, totalScore)
       .then(() => {
 
-        // persist the changes
-        let node = wordList.head;
-        while (node !== null) {
-          const word = getWordAt(node.value);
-          const data = {
-            next: node.next ? node.next.value : null,
-            memory_value: word.memory_value,
-            correct_count: word.correct_count,
-            incorrect_count: word.incorrect_count
-          };
-          LanguageService.updateWord(
-            db, node.value, data
-          ).then(() => {
-            // this only exists so that the query actually runs
-          });
-          node = node.next;
-        }
+        // persist the new word values, and get the next word
+        const nextWord = LanguageService.updateWords(db, words, wordList);
 
         // respond
-        const nextWord = getWordAt(head);
-        res.json({
+        return res.json({
           answer,
           isCorrect,
           totalScore,

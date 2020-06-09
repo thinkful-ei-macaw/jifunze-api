@@ -1,209 +1,174 @@
-# Clear-mind API
+# Jifunze API
+Server application for the [Jifunze app](https://github.com/thinkful-ei-macaw/jifunze) (spaced repetition capstone) by [James Moua](https://github.com/HueHealer) and [Malcolm Kiano](https://github.com/malcolmkiano)
 
-# Clear-mind Server
+## Tables of contents
+* [General Info](#general-info)
+* [Technologies](#technologies)
+* [Local dev setup](#local-dev-setup)
+* [Configuring Postgres](#configuring-postgres)
+* [Scripts](#scripts)
+* [Endpoints](#endpoints)
 
-## Introduction
+## General info
+This project is the server application for the Jifunze app. It consists of a database, a test database, 3 tables, 3 routers, and 6 endpoints
 
-- Welcome to Clear-Mind.
+## Technologies
+Project is created with:
+* Express
+* PSQL
+* Knex
+* Authentication e.g. BcryptJS
+* Middleware e.g. Morgan
+* JavaScript
+* NodeJS
 
-- Explore your feelings and thoughts with daily journals and personal data tracking.
+Project is tested with:
+* Postgrator-cli@3.2.0
+* Mocha
+* Chai
+* Supertest
+* Nodemon
 
-- This digital journaling application allows users to keep track of daily tasks, record inner thoughts, encourage mindful acts, and track sleep and emotional patterns.
-
-- Upon submitting a journal entry, the user's dashboard will update to display emotion and sleep data, allowing the user to see a visual representation of their progress over time.
-
-- The user can use the calendar on the mindfulness center page to navigate to a specific day's journal and update entries to their liking.
-
-## heroku link:
-
-https://obscure-castle-68689.herokuapp.com/
-
-## link to live app:
-
-https://clear-mind.now.sh/
-
-## link to server repo:
-
-https://github.com/thinkful-ei-macaw/clear-awareness-api
-
-## link to client repo:
-
-https://github.com/thinkful-ei-macaw/clear-awareness-client
-
-## Team members: [Desmond Wareham](https://github.com/desmondwa), [Brannen Petit](https://github.com/bpetit940), [James Moua](), [Javori Smart](https://github.com/javi-err), [Vendy Prum](https://github.com/iampruven)
-
-### Tech-Stack:
-
-### Client:
-
-- ReactJS
-- HTML
-- JavaScript
-- CSS
-- Vercel
-
-### Server:
-
-- ReactJs
-- NodeJs
-- Express
-- Knex
-- PostgreSQL
-- Heroku
-
-## Screenshots
-
-## API Docs:
-
-- POST
-
-  - REQUEST: /api/auth/token
-  - allows users to login and get authorization token
-  - `RESPONSE: 200 OK { authToken: returns authToken }`
-
-- PUT
-
-  - REQUEST: /api/auth/
-  - Updates the user's auth token, this is a refreshing situation
-  - RESPONSE: 200 OK {
-    authToken: returns authToken
-    }
-
-- POST
-
-  - REQUEST: /api/users/
-  - Allows users to sign up on the app
-  - RESPONSE: 201 OK {
-    "id": 4,
-    "name": "bran",
-    "username": "testing2"
-    }
-
-- GET
-
-  - REQUEST: /api/journal/
-  - retrieves the user's journals from the last 7 days
-  - RESPONSE: 200 [
-    {"id": 1,
-    "entry": "Sample entry",
-    "tasks": [
-    "task1", "task2, "task3"
-    ],
-    "mindful": "sample mindful act",
-    "sleep_hours": 8,
-    "emotions": 1,
-    "date_created": "2020-06-04},
-    {"id": 1,
-    "entry": "Sample entry",
-    "tasks": [
-    "task1", "task2, "task3"
-    ],
-    "mindful": "sample mindful act 2",
-    "sleep_hours": 8,
-    "emotions": 1,
-    "date_created": "2020-06-05}
-    ]
-
-- GET
-
-  - REQUEST: /api/journal/:journalDate
-
-  - retrieves the specific day that the user is requesting to view
-  - RESPONSE: 200
-    {"id": 1,
-    "entry": "Sample entry",
-    "tasks": [
-    "task1", "task2, "task3"
-    ],
-    "mindful": "sample mindful act",
-    "sleep_hours": 8,
-    "emotions": 1,
-    "date_created": "2020-06-04
-    }
-
-- POST
-
-  - REQUEST: /api/journal
-
-  - inserts users journal at the current date to the database
-  - RESPONSE: 200
-    [ 1 ]
-
-- PATCH
-
-  - REQUEST: /api/journal/:journalDate
-
-  - updates journal for the specified day by the user
-
-  - RESPONSE: 204
-
-- DELETE
-
-  - REQUEST: /api/journal/:journalDate
-
-  - deletes a journal entry based on the specified date by the user
-  - Response: 204
-
-- GET
-  - REQUEST: /api/quotes
-  - returns list of all quotes within the backend store
-  - RESPONSE: [
-    {
-    id: uuid(),
-    quotation:
-    "Anxiety arises from not being able to see the whole picture. If you feel anxious, but are not sure why, try putting your things in order.",
-    author: "Marie Kondo",
-    },
-    {
-    id: uuid(),
-    quotation: "It takes as much energy to wish as it does to plan.",
-    author: "Eleanor Roosevelt",
-    },
-    {
-    id: uuid(),
-    quotation:
-    "Entrepreneurs are simply those who understand that there is little difference between obstacle and opportunity and are able to turn both to their advantage.",
-    author: "Niccolo Machiavelli",
-    }]
-
-### Summary
-
-- This application allows users to view their current emotion and sleep patterns
-- This application allows users to view the current calendar month and submit journals for specific days
-- This application allows users to edit or delete a journal for a specific day
-- This application allows user to view mindfulness quotes above their calendar
-
-### Local Dev Setup
-
-If using user `dunder-mifflin`;
-
+## Local dev setup
+If using user ```dunder-mifflin```:
 ```
-mv .env.test .env
-createdb -U dunder-mifflin clear-mind
-createdb -U dunder-mifflin clear-mind-test
+mv example.env .env
+createdb -U dunder-mifflin spaced-repetition
+createdb -U dunder-mifflin spaced-repetition-test
 ```
-
-If your `dunder-mifflin` user has a password, be sure to set it in `.env` for all appropriate fields. Or if using a different user, update appropriately.
+If your ```dunder-mifflin``` user has a password be sure to set it in ```.env``` for all appropriate fields. Or if using a different user, update appropriately.
 
 ```
 npm install
 npm run migrate
+env TEST_DATABASE_=spaced-repetition-test npm run migrate
+```
+And ```npm test``` should work at this point
+## Configuring Postgres
+For tests involving time to run properly, configure your Postgres database to run in the UTC timezone.
+1. Locate the ```postgresql.conf``` file for your Postgres installation.
+   - E.g. for an OS X, Homebrew install: ```/usr/local/var/postgres/postgresql.conf```
+   - E.g. on Windows, maybe: ```C:\Program Files\PostgreSQL\11.2\data\postgresql.conf```
+   - E.g on Ubuntu 18.04 probably: ```'/etc/postgresql/10/main/postgresql.conf'```
+  
+2. Find the timezone line and set it to UTC:
+```
+# - Locale and Formatting -
+
+datestyle = 'iso, mdy'
+#intervalstyle = 'postgres'
+timezone = 'UTC'
+#timezone_abbreviations = 'Default'     # Select the set of available time zone
+```
+## Scripts
+Start the application ```npm start```
+
+Start nodemon for the application ```npm run dev```
+
+Run the tests mode ```npm test```
+
+Run the migrations up ```npm run migrate```
+
+Run the migrations down ```npm run migrate -- 0```
+
+## Endpoints
+## ```POST /api/auth/token```
+handles the authentication, making sure both username and password match for existing registered accounts
+
+JSON Object requires: 
+- username: string
+- password: string
+
+#### Response: ```200 OK```
+   ```
+ {
+      "authToken": eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJuYW1lIjoiSmlmdW56ZSBBZG1pbiIsImlhdCI6MTU5MDA3NjQ0MiwiZXhwIjoxNTkwMDg3MjQyLCJzdWIiOiJhZG1pbiJ9.rwoEogsEQYkPDwOrMQTmLG9QDlZleQt7wKNB563A8K8"
+}
+```
+## ```PUT /api/auth/token```
+handles the refresh of the user's auth token
+
+JSON Object requires: 
+- valid JSON Web Token
+
+#### Response: ```200 OK```
+```
+{
+    "authToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJuYW1lIjoiSmlmdW56ZSBBZG1pbiIsImlhdCI6MTU5MDA3NzE5NywiZXhwIjoxNTkwMDg3OTk3LCJzdWIiOiJhZG1pbiJ9.KISz0KYn6DdgPL-S5zVIG_4YD90c6dFl8yGSR81tljI"
+}
 ```
 
-Refer to `.env.test`
+## ```GET /api/language```
+gets all of the languages and words
 
-### client installation setup
+#### Response: ```200 OK```
+```
+{
+    "language": {
+        "id": 1,
+        "name": "Swahili",
+        "user_id": 1,
+        "head": 1,
+        "total_score": 0
+    },
+    "words": [
+        {
+            "id": 1,
+            "language_id": 1,
+            "original": "mazoezi",
+            "translation": "practice",
+            "next": 2,
+            "memory_value": 1,
+            "correct_count": 0,
+            "incorrect_count": 0
+        },
+     ]
+}
+```
+## ```GET /api/language/head```
+gets the current word
 
-- npm i
-- npm i react-router-dom
-- npm i date-fns
-- npm i recharts
-- npm i calendar
-
+#### Response: ```200 OK```
+```
+{
+    "nextWord": "mazoezi",
+    "totalScore": 0,
+    "wordCorrectCount": 0,
+    "wordIncorrectCount": 0
+}
 ```
 
+## ```POST /api/language/guess```
+handles whether the user guessed the current word correctly, then updates the score in the database
+
+JSON Object requires:
+- guess: string
+
+#### Response: ```200 OK```
+```
+{
+    "answer": "practice",
+    "isCorrect": false,
+    "nextWord": "jambo",
+    "totalScore": 0,
+    "wordCorrectCount": 0,
+    "wordIncorrectCount": 0
+}
 ```
 
-```
+## ```POST /api/user```
+handles the registration, making sure that the user's username is not already taken when registering
 
+JSON Object requires:
+- name: string
+- username: string ```must not already exist in database```
+- password: string ```7 letters minimum, one uppercase, one number, and one special character```
+
+#### Response: ```201 Created```
+```
+{
+    "id": 2,
+    "name": "geon",
+    "username": "admin1"
+}
 ```
